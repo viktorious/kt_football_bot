@@ -8,7 +8,7 @@ import os.path
 import signal
 import sys
 
-from pandas.io import json
+import json
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
