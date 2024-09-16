@@ -32,4 +32,4 @@
 *.app
 
 #Info with TG bot token
-tg_bot_token
+credentials.json
