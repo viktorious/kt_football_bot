@@ -15,6 +15,7 @@ import time
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
+current_periodic_task = None
 
 async def regular_task():
     for i in range(0, 20):
@@ -27,6 +28,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def test_echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    global current_periodic_task
+    if current_periodic_task is None:
+        event_loop = asyncio.get_event_loop()
+        current_periodic_task = event_loop.create_task(regular_task())
     logging.info(repr(update.message.chat))
     await context.bot.send_message(
         update.message.chat_id, "Message <b>with</b> echo reply"
@@ -50,8 +55,6 @@ def main() -> None:
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("echo", test_echo))
     logging.info("Run Telegram Bot webhook...")
-    event_loop = asyncio.get_event_loop()
-    event_loop
     app.run_webhook(
         listen=credentials["web_addr"] if "web_addr" in credentials else "0.0.0.0",
         port=credentials["web_port"] if "web_addr" in credentials else 80,
@@ -62,6 +65,9 @@ def main() -> None:
         stop_signals=[signal.SIGTERM, signal.SIGINT],
         secret_token=credentials["web_hook_token"],
     )
+    global current_periodic_task
+    if current_periodic_task is None:
+        current_periodic_task.cancel()
 
 
 if __name__ == "__main__":
