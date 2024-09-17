@@ -36,10 +36,10 @@ async def test_echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         current_periodic_task = event_loop.create_task(regular_task())
     logging.info(repr(update.message.chat))
     await context.bot.send_message(
-        update.message.chat_id, "<b>NEW MESSAGE</b><pre>+---------------------+-----+"
-                                "|1 | vsharov <a href=\"tg://user?id=123456789\">vsharov</a>         | 0.2 |"
-                                "|2 | Not vsharov      | 0.3 |"
-                                "+---------------------+-----+</pre>",
+        update.message.chat_id, "<b>NEW MESSAGE</b><pre>+---------------------+-----+\n"
+                                "|1 | vsharov <a href=\"tg://user?id=123456789\">vsharov</a>         | 0.2 |\n"
+                                "|2 | Not vsharov      | 0.3 |\n"
+                                "+---------------------+-----+\n</pre>",
         parse_mode="HTML"
     )
 
