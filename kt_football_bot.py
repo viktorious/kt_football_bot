@@ -15,11 +15,13 @@ import time
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
+logger = logging.getLogger(__name__)
+
 current_periodic_task = None
 
 async def regular_task():
     for i in range(0, 20):
-        print(f"Note: call from regular task {time.monotonic()}")
+        logger.info(f"Note: call from regular task {time.monotonic()}")
         await asyncio.sleep(5.7)
 
 
@@ -34,11 +36,14 @@ async def test_echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         current_periodic_task = event_loop.create_task(regular_task())
     logging.info(repr(update.message.chat))
     await context.bot.send_message(
-        update.message.chat_id, "Message <b>with</b> echo reply"
+        update.message.chat_id, "Echo message\n*Bold text*\n_Underline_\n__Underscore__\n~Strikethtough~\n||Spoiler alert||"
     )
 
 
 def main() -> None:
+
+    logging.basicConfig(filename="kt_football_bot.log", level=logging.INFO)
+
     credentials_file = "credentials.json"
     if len(sys.argv) > 1:
         credentials_file = sys.argv[1]
