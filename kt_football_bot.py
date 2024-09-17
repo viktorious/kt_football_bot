@@ -36,7 +36,8 @@ async def test_echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         current_periodic_task = event_loop.create_task(regular_task())
     logging.info(repr(update.message.chat))
     await context.bot.send_message(
-        update.message.chat_id, "Echo message\n*Bold text*\n_Underline_\n__Underscore__\n~Strikethtough~\n||Spoiler alert||"
+        update.message.chat_id, "Echo message\n*Bold text*\n_Underline_\n__Underscore__\n~Strikethtough~\n||Spoiler alert||",
+        parse_mode="MarkdownV2"
     )
 
 
