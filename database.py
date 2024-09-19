@@ -12,13 +12,13 @@ class FootballBotDatabase:
     async def _get_db(self) -> aiosqlite.Connection:
         if self.__db is None:
             self.__db = await aiosqlite.connect(self.__db_file_name)
-            await self.__db.execute("create table if not exists event(id INTEGER PRIMARY KEY ASC AUTOINCREMENT, "
+            await self.__db.execute("create table if not exists event(id INTEGER PRIMARY KEY AUTOINCREMENT, "
                                     "event_title TEXT, "
                                     "event_time REAL, "
                                     "message_time REAL, "
                                     "message_id INTEGER(8) NOT NULL, "
                                     "chat_id INTEGER(8) NOT NULL)")
-            await self.__db.execute("create table if not exists event_member(id PRIMARY KEY ASC AUTOINCREMENT, "
+            await self.__db.execute("create table if not exists event_member(id INTEGER PRIMARY KEY AUTOINCREMENT, "
                                     "event_id INTEGER NOT NULL, "
                                     "user_id INTEGER(8) NOT NULL, "
                                     "name text, "
