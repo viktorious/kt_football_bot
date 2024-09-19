@@ -34,7 +34,7 @@ class FootballBotDatabase:
         message_time = float(message_time)
         message_id = int(message_id)
         chat_id = int(chat_id)
-        await db.execute(f"inset into event(event_title, event_time, message_time, message_id, chat_id) "
+        await db.execute(f"insert into event(event_title, event_time, message_time, message_id, chat_id) "
                          f"values('{event_title}', '{event_time}', '{message_time}', '{message_id}', '{chat_id}')")
         await db.commit()
 
