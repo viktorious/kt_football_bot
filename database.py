@@ -41,6 +41,7 @@ class FootballBotDatabase:
                          f"values('{event_title}', '{event_time}', '{message_time}', '{message_id}', '{chat_id}')")
         cursor = await db.execute("select last_insert_rowid()")
         rows = await cursor.fetchall()
-        logger.info(repr(rows))
+        logger.info(repr(rows[0]))
+        logger.info(repr(rows[0][0]))
         await db.commit()
 
