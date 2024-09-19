@@ -16,13 +16,13 @@ class FootballBotDatabase:
                                     "event_title TEXT, "
                                     "event_time REAL, "
                                     "message_time REAL, "
-                                    "message_id INTEGER(8) NOT NULL"
+                                    "message_id INTEGER(8) NOT NULL, "
                                     "chat_id INTEGER(8) NOT NULL)")
             await self.__db.execute("create table if not exists event_member(id PRIMARY KEY ASC AUTOINCREMENT, "
                                     "event_id INTEGER NOT NULL, "
                                     "user_id INTEGER(8) NOT NULL, "
-                                    "name text"
-                                    "username text"
+                                    "name text, "
+                                    "username text, "
                                     "join_time REAL)")
         return self.__db
 
