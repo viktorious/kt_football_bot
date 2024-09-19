@@ -2,6 +2,9 @@
 SQLite database support functions for kt_football_bot bot
 """
 import aiosqlite
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class FootballBotDatabase:
@@ -36,5 +39,8 @@ class FootballBotDatabase:
         chat_id = int(chat_id)
         await db.execute(f"insert into event(event_title, event_time, message_time, message_id, chat_id) "
                          f"values('{event_title}', '{event_time}', '{message_time}', '{message_id}', '{chat_id}')")
+        cursor = await db.execute("select last_insert_rowid()")
+        rows = await cursor.fetchall()
+        logger.info(repr(rows))
         await db.commit()
 
