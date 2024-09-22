@@ -11,6 +11,7 @@ import sys
 
 import json
 import time
+from datetime import datetime
 
 from typing import Optional
 
@@ -36,16 +37,34 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(f"...creating event...")
-    await database.create_event("NEW_EVENT_HERE", time.monotonic(), time.monotonic(), -1, update.message.chat_id)
+    # await update.message.reply_text(f"...creating event...")
+    event_list = await database.get_all_events()
+    await update.message.reply_text(str(event_list))
+
+    cur_time = time.time()
+    # next day, 18:30
+    event_time = (cur_time % 86_400) + 86400 + 66_600 # + 1 day  + 18:30
+    event_time_struct = time.localtime(event_time)
+    event_title = f"⚽️Футбол {event_time_struct.tm_mday}-{event_time_struct.tm_mon}-{event_time_struct.tm_} 18:30⚽️"
+    players_limit = 21
+    await database.create_event(
+        event_title,
+        event_time,
+        cur_time,
+        -1,
+        update.message.chat_id,
+        players_limit
+    )
     msg = await context.bot.send_message(
-        update.message.chat_id, "<b>⚽️NEW_EVENT_HERE⚽️</b>\n"
-                                "\n"
-                                "1. Viktor Sharov (the_viktorious)\n"
-                                f"\t\t⏱0.12 seconds\n\n"
-                                "2. Viktor Sharov (the_viktorious)\n"
-                                f"\t\t⏱0.21 seconds\n\n",
-        parse_mode="HTML"
+        update.message.chat_id,
+        f"<b>{event_title}</b>\n"
+        f"Ліміт гравців: {players_limit}"
+        "\n\n"
+        "1. Viktor Sharov (the_viktorious)\n"
+        f"\t\t⏱0.12 seconds\n\n"
+        "2. Viktor Sharov (the_viktorious)\n"
+        f"\t\t⏱0.21 seconds\n\n",
+        parse_mode="HTML",
     )
     logger.info(f"Created message id is {msg.id}")
 
@@ -58,20 +77,20 @@ async def test_echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logging.info(repr(update.message.chat))
 
     await context.bot.send_message(
-        update.message.chat_id, "<b>👟NEW MESSAGE👟</b>\n"
-                                "\n"
-                                "1. Viktor Sharov\n"
-                                f"\t<a href=\"tg://user?id={update.effective_user.id}\">@the_viktorious</a>\n"
-                                f"\t⏱0.12 seconds\n\n"
-                                "2. Viktor Sharov\n"
-                                f"\t<a href=\"tg://user?id={update.effective_user.id}\">@the_viktorious</a>\n"
-                                f"\t⏱0.12 seconds\n\n",
-        parse_mode="HTML"
+        update.message.chat_id,
+        "<b>👟NEW MESSAGE👟</b>\n"
+        "\n"
+        "1. Viktor Sharov\n"
+        f'\t<a href="tg://user?id={update.effective_user.id}">@the_viktorious</a>\n'
+        f"\t⏱0.12 seconds\n\n"
+        "2. Viktor Sharov\n"
+        f'\t<a href="tg://user?id={update.effective_user.id}">@the_viktorious</a>\n'
+        f"\t⏱0.12 seconds\n\n",
+        parse_mode="HTML",
     )
 
 
 def main() -> None:
-
     global database
     logging.basicConfig(filename="kt_football_bot.log", level=logging.INFO)
 
@@ -91,7 +110,9 @@ def main() -> None:
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("kt_add_event", kt_create_event))
     logging.info("Run Telegram Bot webhook...")
-    database = FootballBotDatabase(credentials["db_path"] if "db_path" in credentials else "kt_football.db")
+    database = FootballBotDatabase(
+        credentials["db_path"] if "db_path" in credentials else "kt_football.db"
+    )
     app.run_webhook(
         listen=credentials["web_addr"] if "web_addr" in credentials else "0.0.0.0",
         port=credentials["web_port"] if "web_addr" in credentials else 80,
