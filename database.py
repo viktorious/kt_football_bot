@@ -42,6 +42,7 @@ class FootballBotDatabase:
             self.__db = await aiosqlite.connect(self.__db_file_name)
             for sql in self.SQL_CREATE_DB:
                 try:
+                    logger.info(f"Execute SQL: {sql}")
                     await self.__db.execute(sql)
                 except Exception as e:
                     logger.error(e)
