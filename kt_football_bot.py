@@ -45,7 +45,7 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     # next day, 18:30
     event_time = (cur_time % 86_400) + 86400 + 66_600 # + 1 day  + 18:30
     event_time_struct = time.localtime(event_time)
-    event_title = f"⚽️Футбол {event_time_struct.tm_mday}-{event_time_struct.tm_mon}-{event_time_struct.tm_} 18:30⚽️"
+    event_title = f"⚽️Футбол {event_time_struct.tm_mday}-{event_time_struct.tm_mon}-{event_time_struct.tm_mday} 18:30⚽️"
     players_limit = 21
     await database.create_event(
         event_title,
