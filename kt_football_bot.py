@@ -47,7 +47,7 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     event_time_struct = time.localtime(event_time)
     event_title = f"⚽️Футбол {event_time_struct.tm_mday}-{event_time_struct.tm_mon}-{event_time_struct.tm_mday} 18:30⚽️"
     players_limit = 21
-    await database.create_event(
+    db_id = await database.create_event(
         event_title,
         event_time,
         cur_time,
@@ -66,7 +66,7 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         f"\t\t⏱0.21 seconds\n\n",
         parse_mode="HTML",
     )
-    logger.info(f"Created message id is {msg.id}")
+    logger.info(f"Created message id is {msg.id}; record db id is {db_id}")
 
 
 async def test_echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

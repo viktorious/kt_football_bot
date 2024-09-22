@@ -63,7 +63,7 @@ class FootballBotDatabase:
         db: aiosqlite.Connection = await self._get_db()
 
         await db.execute(
-            f"insert into event(event_title, event_time, message_time, message_id, chat_id, players_limit) "
+            f"insert into event(event_title, event_time, message_timestamp, message_id, chat_id, players_limit) "
             f"values('{event_title}', '{event_time}', '{message_time}', '{message_id}', '{chat_id}', '{players_limit}')"
         )
         cursor = await db.execute("select last_insert_rowid()")
