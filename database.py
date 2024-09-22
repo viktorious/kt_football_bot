@@ -17,8 +17,8 @@ class FootballBotDatabase:
             "event_time REAL, "
             "message_timestamp REAL, "
             "message_id INTEGER(8) NOT NULL, "
-            "chat_id INTEGER(8) NOT NULL), "
-            "players_limit INTEGER(4) DEFAULT 21"
+            "chat_id INTEGER(8) NOT NULL, "
+            "players_limit INTEGER(4) DEFAULT 21)"
         ),
         (
             "create table if not exists "
