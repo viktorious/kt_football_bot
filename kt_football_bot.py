@@ -45,11 +45,14 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     # next day, 18:30
     event_time = int(cur_time / 86_400) * 86400 + 86400 + 66_600 # + 1 day  + 18:30
     event_time_struct = time.localtime(event_time)
-    event_title = f"⚽️Футбол {event_time_struct.tm_mday}-{event_time_struct.tm_mon}-{event_time_struct.tm_year} 18:30⚽️"
+    event_title = (f"⚽️Футбол {event_time_struct.tm_mday}-{event_time_struct.tm_mon}-{event_time_struct.tm_year} "
+                   f"{event_time_struct.tm_hour}:{event_time_struct.tm_min}⚽️")
+    event_address = "🏟 Футбольне поле, вул. Липи, 6-А"
     players_limit = 21
     db_id = await database.create_event(
         event_title,
         event_time,
+        event_address,
         cur_time,
         -1,
         update.message.chat_id,
@@ -58,6 +61,7 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     msg = await context.bot.send_message(
         update.message.chat_id,
         f"<b>{event_title}</b>\n"
+        f"{event_address}\n"
         f"Ліміт гравців: {players_limit}"
         "\n\n"
         "1. Viktor Sharov (the_viktorious)\n"

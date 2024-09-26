@@ -15,6 +15,7 @@ class FootballBotDatabase:
             "event(id INTEGER PRIMARY KEY AUTOINCREMENT, "
             "event_title TEXT, "
             "event_time REAL, "
+            "event_address TEXT, "
             "message_timestamp REAL, "
             "message_id INTEGER(8) NOT NULL, "
             "chat_id INTEGER(8) NOT NULL, "
@@ -51,10 +52,12 @@ class FootballBotDatabase:
         return self.__db
 
     async def create_event(
-        self, event_title, event_time, message_time, message_id, chat_id, players_limit=21
+        self, event_title, event_time, event_address, message_time, message_id, chat_id, players_limit=21
     ):
         event_title = str(event_title).replace("'", "")
         event_title = str(event_title).replace('"', "")
+        event_address = str(event_address).replace("'", "")
+        event_address = str(event_address).replace('"', "")
         event_time = float(event_time)
         message_time = float(message_time)
         message_id = int(message_id)
@@ -63,8 +66,8 @@ class FootballBotDatabase:
         db: aiosqlite.Connection = await self._get_db()
 
         await db.execute(
-            f"insert into event(event_title, event_time, message_timestamp, message_id, chat_id, players_limit) "
-            f"values('{event_title}', '{event_time}', '{message_time}', '{message_id}', '{chat_id}', '{players_limit}')"
+            f"insert into event(event_title, event_time, event_address, message_timestamp, message_id, chat_id, players_limit) "
+            f"values('{event_title}', '{event_time}', '{event_address}', '{message_time}', '{message_id}', '{chat_id}', '{players_limit}')"
         )
         cursor = await db.execute("select last_insert_rowid()")
         rows = await cursor.fetchall()
