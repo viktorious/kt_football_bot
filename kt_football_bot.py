@@ -12,7 +12,6 @@ import sys
 import json
 import time
 import datetime
-from zoneinfo import ZoneInfo, available_timezones
 
 from typing import Optional
 
@@ -42,13 +41,12 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
     event_date_time =  datetime.datetime.today() + datetime.timedelta(days=1)
     event_date_time = datetime.datetime(year=event_date_time.year, month=event_date_time.month,
-                                        day=event_date_time.day, hour=18, minute=30, second=0, tzinfo=ZoneInfo("Europe/Kiev"))
+                                        day=event_date_time.day, hour=18, minute=30, second=0)
     event_title = (f"⚽️Футбол {event_date_time.day}-{event_date_time.month}-{event_date_time.year} "
                    f"{event_date_time.hour}:{event_date_time.minute}⚽️")
     event_address = "🏟 Футбольне поле, вул. Липи, 6-А"
     players_limit = 21
     limit_hint = "Ліміт гравців: "
-    logger.info(available_timezones())
     event_time = time.mktime(event_date_time.timetuple())
     for existing_event in event_list:
         existing_event_time = existing_event[2]
@@ -56,6 +54,7 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             await update.message.reply_text("На цей час вже є запланована гра")
             return
     logger.info(time.localtime(event_time))
+    logger.info(f"Remaining: {event_time - time.time()}")
     db_id = await database.create_event(
         event_title,
         event_time,
