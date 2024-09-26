@@ -50,7 +50,7 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     event_time = time.mktime(event_date_time.timetuple())
     for existing_event in event_list:
         existing_event_time = existing_event[2]
-        if str(update.message.chat_id) == str(existing_event_time[6]) and abs(existing_event_time - event_time) < 3600:
+        if str(update.message.chat_id) == str(existing_event[6]) and abs(existing_event_time - event_time) < 3600:
             await update.message.reply_text("На цей час вже є запланована гра")
             return
     logger.info(time.localtime(event_time))
