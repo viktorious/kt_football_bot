@@ -11,10 +11,11 @@ import sys
 
 import json
 import time
-from datetime import datetime
+import datetime
 
 from typing import Optional
 
+from numba.np.npdatetime import datetime_maximum_impl
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
@@ -41,19 +42,16 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     event_list = await database.get_all_events()
     await update.message.reply_text(str(event_list))
 
-    cur_time = time.time()
-    # next day, 18:30
-    event_time = int(cur_time / 86_400) * 86400 + 86400 + 66_600 # + 1 day  + 18:30
-    event_time_struct = time.localtime(event_time)
-    event_title = (f"⚽️Футбол {event_time_struct.tm_mday}-{event_time_struct.tm_mon}-{event_time_struct.tm_year} "
-                   f"{event_time_struct.tm_hour}:{event_time_struct.tm_min}⚽️")
+    event_date_time = datetime.datetime.today() + datetime.timedelta(days=1, hours=18, minutes=30)
+    event_title = (f"⚽️Футбол {event_date_time.day}-{event_date_time.month}-{event_date_time.year} "
+                   f"{event_date_time.hour}:{event_date_time.minute}⚽️")
     event_address = "🏟 Футбольне поле, вул. Липи, 6-А"
     players_limit = 21
     db_id = await database.create_event(
         event_title,
-        event_time,
+        time.mktime(event_date_time.timetuple()),
         event_address,
-        cur_time,
+        time.time(),
         -1,
         update.message.chat_id,
         players_limit
