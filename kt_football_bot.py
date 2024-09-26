@@ -12,6 +12,7 @@ import sys
 import json
 import time
 import datetime
+from zoneinfo import ZoneInfo
 
 from typing import Optional
 
@@ -37,9 +38,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # await update.message.reply_text(f"...creating event...")
     event_list = await database.get_all_events()
-    event_date_time = datetime.datetime.today() + datetime.timedelta(days=1, hours=18, minutes=30)
+
+    event_date_time =  datetime.datetime.today() + datetime.timedelta(days=1)
+    event_date_time = datetime.datetime(year=event_date_time.year, month=event_date_time.month,
+                                        day=event_date_time.day, hour=18, minute=30, second=0, tzinfo=ZoneInfo("Europe/Kiev"))
     event_title = (f"⚽️Футбол {event_date_time.day}-{event_date_time.month}-{event_date_time.year} "
                    f"{event_date_time.hour}:{event_date_time.minute}⚽️")
     event_address = "🏟 Футбольне поле, вул. Липи, 6-А"
@@ -49,7 +52,7 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     event_time = time.mktime(event_date_time.timetuple())
     for existing_event in event_list:
         existing_event_time = existing_event[2]
-        if abs(existing_event_time - event_time) < 60:
+        if str(update.message.chat_id) == str(existing_event_time[6]) and abs(existing_event_time - event_time) < 3600:
             await update.message.reply_text("На цей час вже є запланована гра")
             return
     logger.info(time.localtime(event_time))
