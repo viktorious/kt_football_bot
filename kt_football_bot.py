@@ -15,7 +15,6 @@ import datetime
 
 from typing import Optional
 
-from numba.np.npdatetime import datetime_maximum_impl
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
