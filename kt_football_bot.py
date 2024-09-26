@@ -40,16 +40,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # await update.message.reply_text(f"...creating event...")
     event_list = await database.get_all_events()
-    await update.message.reply_text(str(event_list))
-
     event_date_time = datetime.datetime.today() + datetime.timedelta(days=1, hours=18, minutes=30)
     event_title = (f"⚽️Футбол {event_date_time.day}-{event_date_time.month}-{event_date_time.year} "
                    f"{event_date_time.hour}:{event_date_time.minute}⚽️")
     event_address = "🏟 Футбольне поле, вул. Липи, 6-А"
     players_limit = 21
+    limit_hint = "Ліміт гравців: "
+
+    event_time = time.mktime(event_date_time.timetuple())
+    for existing_event in event_list:
+        existing_event_time = existing_event[2]
+        if abs(existing_event_time - event_time) < 60:
+            await update.message.reply_text("На цей час вже є запланована гра")
+            return
+    logger.info(time.localtime(event_time))
     db_id = await database.create_event(
         event_title,
-        time.mktime(event_date_time.timetuple()),
+        event_time,
         event_address,
         time.time(),
         -1,
@@ -60,12 +67,12 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         update.message.chat_id,
         f"<b>{event_title}</b>\n"
         f"{event_address}\n"
-        f"Ліміт гравців: {players_limit}"
+        f"{limit_hint}{players_limit}"
         "\n\n"
         "1. Viktor Sharov (the_viktorious)\n"
-        f"\t\t⏱0.12 seconds\n\n"
+        f"\t\t⏱0.12 seconds\n"
         "2. Viktor Sharov (the_viktorious)\n"
-        f"\t\t⏱0.21 seconds\n\n",
+        f"\t\t⏱0.21 seconds\n",
         parse_mode="HTML",
     )
     logger.info(f"Created message id is {msg.id}; record db id is {db_id}")
