@@ -12,7 +12,7 @@ import sys
 import json
 import time
 import datetime
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, available_timezones
 
 from typing import Optional
 
@@ -48,7 +48,7 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     event_address = "🏟 Футбольне поле, вул. Липи, 6-А"
     players_limit = 21
     limit_hint = "Ліміт гравців: "
-
+    logger.info(available_timezones())
     event_time = time.mktime(event_date_time.timetuple())
     for existing_event in event_list:
         existing_event_time = existing_event[2]
