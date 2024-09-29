@@ -15,7 +15,7 @@ import datetime
 
 from typing import Optional
 
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 from database import FootballBotDatabase
@@ -35,6 +35,15 @@ database: Optional[FootballBotDatabase] = None
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(f"Hello from KT Football Bot")
 
+
+def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
+    """Build menu from buttons for telegram message"""
+    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+    if header_buttons:
+        menu.insert(0, [header_buttons])
+    if footer_buttons:
+        menu.append([footer_buttons])
+    return menu
 
 async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     event_list = await database.get_all_events()
@@ -64,6 +73,13 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         update.message.chat_id,
         players_limit
     )
+
+    button_list = [
+        InlineKeyboardButton("Так", callback_data='ADD'),
+        InlineKeyboardButton("Ні", callback_data='REMOVE'),
+    ]
+    markup = InlineKeyboardMarkup(build_menu(button_list, n_cols=1))
+
     msg = await context.bot.send_message(
         update.message.chat_id,
         f"<b>{event_title}</b>\n"
@@ -75,8 +91,11 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         "2. Viktor Sharov (the_viktorious)\n"
         f"\t\t⏱0.21 seconds\n",
         parse_mode="HTML",
+        reply_markup=markup
     )
+    local_time =  time.localtime(event_time)
     logger.info(f"Created message id is {msg.id}; record db id is {db_id}")
+    logger.info(local_time)
 
 
 async def test_echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
