@@ -16,7 +16,7 @@ import datetime
 from typing import Optional
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 
 from database import FootballBotDatabase
 
@@ -97,6 +97,12 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     logger.info(f"Created message id is {msg.id}; record db id is {db_id}")
     logger.info(local_time)
 
+async def button(update, context):
+    """Process clicking buttons for EVENT (register/unregister player)"""
+    chat_id = update.effective_message.chat_id
+    data = update.callback_query.data
+    await context.bot.send_message(chat_id, f"Pressed: {data} in {chat_id}")
+    await update.callback_query.answer()
 
 async def test_echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # global current_periodic_task
@@ -138,6 +144,7 @@ def main() -> None:
     app = ApplicationBuilder().token(token).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("kt_add_event", kt_create_event))
+    app.add_handler(CallbackQueryHandler(button))
     logging.info("Run Telegram Bot webhook...")
     database = FootballBotDatabase(
         credentials["db_path"] if "db_path" in credentials else "kt_football.db"
