@@ -66,7 +66,7 @@ class FootballBotDatabase:
         "create index if not exists event_event_time_chat on event(chat_id)",
         "create unique index if not exists member_event_filter on event_member(event_id, user_id)",
         "create index if not exists member_event_time_order on event_member(event_id, user_id, join_timestamp)",
-        "create index if not exists ban_user on ban(event_id, user_id, join_timestamp)",
+        "create index if not exists ban_user on ban(chat_id, user_id, join_timestamp)",
     ]
 
     def __init__(self, file_name="kt_football.db"):
