@@ -18,6 +18,7 @@ Creates and supports tables in database:
       - username (user Telegram nick, if exists)
       - timestamps of joining to create proper sequence of joined players
       - count - how many times player clicked "join" in event message
+      - state - 1: joined event; 2: "not going"  3: banned
     Note: there is no "user" table - user information is taken from Telegram
     - ban
     Banned user list
@@ -33,6 +34,9 @@ logger = logging.getLogger(__name__)
 
 class FootballBotDatabase:
 
+    #global instance
+    global_instance = None
+
     SQL_CREATE_DB = [
         (
             "create table if not exists "
@@ -47,13 +51,14 @@ class FootballBotDatabase:
         ),
         (
             "create table if not exists "
-             "event_member(id INTEGER PRIMARY KEY AUTOINCREMENT, "
-             "event_id INTEGER NOT NULL, "
-             "user_id INTEGER(8) NOT NULL, "
-             "name text, "
-             "username text, "
-             "join_timestamp REAL,"
-             "count INTEGER default 1)"
+            "event_member(id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "event_id INTEGER NOT NULL, "
+            "user_id INTEGER(8) NOT NULL, "
+            "name text, "
+            "username text, "
+            "join_timestamp REAL,"
+            "state INTEGER default 1,"
+            "count INTEGER default 1)"
         ),
         (
             "create table if not exists "
@@ -126,13 +131,24 @@ class FootballBotDatabase:
             if key in event_descr:
                 s = str(event_descr[key]).replace("'", "").replace('"', "")
                 sql.append(f"{db_key}='{s}'")
+        event_id = int(event_id)
         if len(sql) > 0:
-            sql = f"update event set {','.join(sql)}"
+            sql = f"update event set {','.join(sql)} where id={event_id}"
             db: aiosqlite.Connection = await self._get_db()
             await db.execute(sql)
 
-    async def get_all_events(self):
+    async def get_all_events(self, chat_id):
         db: aiosqlite.Connection = await self._get_db()
-        async with db.execute("select * from event order by event_time") as cursor:
+        chat_id = int(chat_id)
+        async with db.execute(f"select * from event where chat_id={chat_id} order by event_time") as cursor:
             rows = await cursor.fetchall()
         return rows
+
+    @staticmethod
+    def instance(db_path = None):
+        if FootballBotDatabase.global_instance is None:
+            if db_path is None:
+                return None
+            else:
+                FootballBotDatabase.global_instance = FootballBotDatabase(db_path)
+        return FootballBotDatabase.global_instance

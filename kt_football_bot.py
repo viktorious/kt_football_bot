@@ -13,16 +13,13 @@ import json
 import time
 import datetime
 
-from typing import Optional
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 
-from database import FootballBotDatabase
+import event as bot_event
+import database as bot_db
 
 logger = logging.getLogger(__name__)
-
-database: Optional[FootballBotDatabase] = None
 
 # current_periodic_task = None
 
@@ -46,33 +43,21 @@ def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
     return menu
 
 async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    event_list = await database.get_all_events()
-
-    event_date_time =  datetime.datetime.today() + datetime.timedelta(days=1)
-    event_date_time = datetime.datetime(year=event_date_time.year, month=event_date_time.month,
-                                        day=event_date_time.day, hour=18, minute=30, second=0)
-    event_title = (f"⚽️Футбол {event_date_time.day}-{event_date_time.month}-{event_date_time.year} "
-                   f"{event_date_time.hour}:{event_date_time.minute}⚽️")
-    event_address = "🏟 Футбольне поле, вул. Липи, 6-А"
-    players_limit = 21
-    limit_hint = "Ліміт гравців: "
-    event_time = time.mktime(event_date_time.timetuple())
-    for existing_event in event_list:
-        existing_event_time = existing_event[2]
-        if str(update.message.chat_id) == str(existing_event[6]) and abs(existing_event_time - event_time) < 3600:
-            await update.message.reply_text("На цей час вже є запланована гра")
-            return
-    logger.info(time.localtime(event_time))
-    logger.info(f"Remaining: {event_time - time.time()}")
-    db_id = await database.create_event(
-        event_title,
-        event_time,
-        event_address,
-        time.time(),
-        -1,
-        update.message.chat_id,
-        players_limit
-    )
+    # check if event with same address and same time already created
+    chat_id = update.message.chat_id
+    new_event = bot_event.Event(update.message.text)
+    logger.info(f"NOTE: message text is {update.message.text}")
+    event_list = await bot_event.Event.event_list(chat_id=chat_id)
+    for event in event_list:
+        if str(new_event.address).lower() == str(event.address).lower():
+            new_time = time.mktime(new_event.time.timetuple())
+            existing_time = time.mktime(event.time.timetuple())
+            if abs(new_time - existing_time) < 3600:
+                await update.message.reply_text(f"На цей час вже є запланована гра: {event.address} {event.time}",
+                                                parse_mode="HTML")
+                return
+    # store new event in database and create event message
+    new_event.store_to_db(update.message.chat_id)
 
     button_list = [
         InlineKeyboardButton("Так", callback_data='ADD'),
@@ -82,20 +67,11 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
     msg = await context.bot.send_message(
         update.message.chat_id,
-        f"<b>{event_title}</b>\n"
-        f"{event_address}\n"
-        f"{limit_hint}{players_limit}"
-        "\n\n"
-        "1. Viktor Sharov (the_viktorious)\n"
-        f"\t\t⏱0.12 seconds\n"
-        "2. Viktor Sharov (the_viktorious)\n"
-        f"\t\t⏱0.21 seconds\n",
+        new_event.create_html_message(update.message.chat_id),
         parse_mode="HTML",
         reply_markup=markup
     )
-    local_time =  time.localtime(event_time)
-    logger.info(f"Created message id is {msg.id}; record db id is {db_id}")
-    logger.info(local_time)
+    new_event.update_message_id(msg.id)
 
 async def button(update, context):
     """Process clicking buttons for EVENT (register/unregister player)"""
@@ -126,7 +102,6 @@ async def test_echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 def main() -> None:
-    global database
     logging.basicConfig(filename="kt_football_bot.log", level=logging.INFO)
 
     credentials_file = "credentials.json"
@@ -146,9 +121,10 @@ def main() -> None:
     app.add_handler(CommandHandler("kt_add_event", kt_create_event))
     app.add_handler(CallbackQueryHandler(button))
     logging.info("Run Telegram Bot webhook...")
-    database = FootballBotDatabase(
-        credentials["db_path"] if "db_path" in credentials else "kt_football.db"
-    )
+
+    # init database
+    bot_db.FootballBotDatabase.instance(credentials["db_path"] if "db_path" in credentials else "kt_football.db")
+
     app.run_webhook(
         listen=credentials["web_addr"] if "web_addr" in credentials else "0.0.0.0",
         port=credentials["web_port"] if "web_addr" in credentials else 80,
