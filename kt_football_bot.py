@@ -127,7 +127,6 @@ def main() -> None:
         stop_signals=[signal.SIGTERM, signal.SIGINT],
         secret_token=credentials["web_hook_token"],
     )
-    global current_periodic_task
     if current_periodic_task is None:
         current_periodic_task.cancel()
 
