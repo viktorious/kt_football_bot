@@ -11,7 +11,6 @@ import sys
 
 import json
 import time
-import datetime
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
@@ -21,12 +20,19 @@ import database as bot_db
 
 logger = logging.getLogger(__name__)
 
-# current_periodic_task = None
+current_periodic_task = None
+current_periodic_task_stopped = False
+current_periodic_task_queue = []
 
-# async def regular_task():
-#     for i in range(0, 20):
-#         logger.info(f"Note: call from regular task {time.monotonic()}")
-#         await asyncio.sleep(5.7)
+
+async def regular_task():
+    global current_periodic_task_queue
+    while not current_periodic_task_stopped:
+        if len(current_periodic_task_queue) == 0:
+            time.sleep(2)
+            continue
+        queue = current_periodic_task_queue[:]
+        current_periodic_task_queue.clear()
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -80,26 +86,6 @@ async def button(update, context):
     await context.bot.send_message(chat_id, f"Pressed: {data} in {chat_id}")
     await update.callback_query.answer()
 
-async def test_echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # global current_periodic_task
-    # if current_periodic_task is None:
-    #     event_loop = asyncio.get_event_loop()
-    #     current_periodic_task = event_loop.create_task(regular_task())
-    logging.info(repr(update.message.chat))
-
-    await context.bot.send_message(
-        update.message.chat_id,
-        "<b>👟NEW MESSAGE👟</b>\n"
-        "\n"
-        "1. Viktor Sharov\n"
-        f'\t<a href="tg://user?id={update.effective_user.id}">@the_viktorious</a>\n'
-        f"\t⏱0.12 seconds\n\n"
-        "2. Viktor Sharov\n"
-        f'\t<a href="tg://user?id={update.effective_user.id}">@the_viktorious</a>\n'
-        f"\t⏱0.12 seconds\n\n",
-        parse_mode="HTML",
-    )
-
 
 def main() -> None:
     logging.basicConfig(filename="kt_football_bot.log", level=logging.INFO)
@@ -125,6 +111,12 @@ def main() -> None:
     # init database
     bot_db.FootballBotDatabase.instance(credentials["db_path"] if "db_path" in credentials else "kt_football.db")
 
+    # run background task for updating messages
+    global current_periodic_task
+    if current_periodic_task is None:
+        event_loop = asyncio.get_event_loop()
+        current_periodic_task = event_loop.create_task(regular_task())
+
     app.run_webhook(
         listen=credentials["web_addr"] if "web_addr" in credentials else "0.0.0.0",
         port=credentials["web_port"] if "web_addr" in credentials else 80,
@@ -135,9 +127,9 @@ def main() -> None:
         stop_signals=[signal.SIGTERM, signal.SIGINT],
         secret_token=credentials["web_hook_token"],
     )
-    # global current_periodic_task
-    # if current_periodic_task is None:
-    #     current_periodic_task.cancel()
+    global current_periodic_task
+    if current_periodic_task is None:
+        current_periodic_task.cancel()
 
 
 if __name__ == "__main__":

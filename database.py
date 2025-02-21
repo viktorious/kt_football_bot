@@ -144,6 +144,17 @@ class FootballBotDatabase:
             rows = await cursor.fetchall()
         return rows
 
+    async def add_member(self):
+        db: aiosqlite.Connection = await self._get_db()
+        # todo: add member to event
+
+    async def get_member_list(self, event_id):
+        db: aiosqlite.Connection = await self._get_db()
+        event_id = int(event_id)
+        async with db.execute(f"select * from event_member where event_id={event_id} order by join_timestamp") as cursor:
+            rows = await cursor.fetchall()
+        return rows
+
     @staticmethod
     def instance(db_path = None):
         if FootballBotDatabase.global_instance is None:

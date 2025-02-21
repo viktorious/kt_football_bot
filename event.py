@@ -7,33 +7,21 @@ import datetime
 import re
 import time
 from time import strftime
+from dataclasses import dataclass
 
 from database import FootballBotDatabase
 
+@dataclass
 class Event:
     """
     Event description with methods to create/update/delete event in database
     """
-    @property
-    def title(self):
-        """
-        :return: Title of event
-        """
-        return self.__title
+    title : str
+    time : datetime.datetime
+    address : str = ""
+    players_limit : int = 21
 
-    @property
-    def time(self):
-        return self.__time
-
-    @property
-    def address(self):
-        return self.__address
-
-    @property
-    def players_limit(self):
-        return self.__players_limit
-
-    def __init__(self, message_text: str = "", db_id: int = None):
+    def __init__(self, message_text: str, db_id: int = None):
         self.__title = ""
         self.__time = datetime.datetime.now()
         self.__players_limit = 21
@@ -50,6 +38,7 @@ class Event:
         """
         if fill_default:
             # fill default parameters for event
+            # local date time
             event_date_time =  datetime.datetime.today() + datetime.timedelta(days=1)
             event_date_time = datetime.datetime(year=event_date_time.year, month=event_date_time.month,
                                                 day=event_date_time.day, hour=19, minute=0, second=0)
@@ -61,7 +50,7 @@ class Event:
             #TODO: use per-channel default templates
         for long_line in message_text.splitlines():
             for line in long_line.split(";"):
-                reg_res = re.search(r"(\w+)=(.+)", line)
+                reg_res = re.search(r"(\w+)[=:](.+)", line)
                 if reg_res is not None:
                     name = reg_res.group(1)
                     value = reg_res.group(2)
@@ -119,7 +108,7 @@ class Event:
         result = []
         for row in db_event_list:
             # id, event_title, event_time, event_address, message_timestamp, message_id, chat_id, players_limit
-            item = Event(db_id=int(row[0]))
+            item = Event(message_text="", db_id=int(row[0]))
             item.__title = str(row[1])
             item.__time = datetime.datetime.fromtimestamp(int(row[2]))
             item.__address = str(row[3])
@@ -127,15 +116,28 @@ class Event:
             result.append(item)
         return result
 
+    @dataclass
     class Player:
         """
         Player record in this particular event
         """
-        PLAYER_HERE!!!
+        # telegram name for user in event
+        name: str
+        # telegram login (if set) of user in event
+        login: str
+        # state of user: "yes", "no", "ban"
+        state: str
+        # when joined to event
+        join_time: datetime.datetime
+        # how many times pressed "join" button
+        count: int = 0
 
-
-    def get_participants_list(self, chat_id):
-        GET_PLAYERS!!!
+    async def get_participants_list(self, chat_id):
+        player_list = []
+        if self.__db_id is not None:
+            db_list =  await FootballBotDatabase.instance().get_member_list(self.__db_id)
+        return db_list
+        # return player_list
 
     def __update(self, name: str, value: str):
         name = name.lower()
