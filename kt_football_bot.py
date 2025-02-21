@@ -112,10 +112,10 @@ def main() -> None:
     bot_db.FootballBotDatabase.instance(credentials["db_path"] if "db_path" in credentials else "kt_football.db")
 
     # run background task for updating messages
-    global current_periodic_task
-    if current_periodic_task is None:
-        event_loop = asyncio.get_event_loop()
-        current_periodic_task = event_loop.create_task(regular_task())
+    # global current_periodic_task
+    # if current_periodic_task is None:
+    #     event_loop = asyncio.get_event_loop()
+    #     current_periodic_task = event_loop.create_task(regular_task())
 
     app.run_webhook(
         listen=credentials["web_addr"] if "web_addr" in credentials else "0.0.0.0",
@@ -127,8 +127,8 @@ def main() -> None:
         stop_signals=[signal.SIGTERM, signal.SIGINT],
         secret_token=credentials["web_hook_token"],
     )
-    if current_periodic_task is None:
-        current_periodic_task.cancel()
+    # if current_periodic_task is None:
+    #     current_periodic_task.cancel()
 
 
 if __name__ == "__main__":
