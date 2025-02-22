@@ -139,6 +139,10 @@ class Event:
         return db_list
         # return player_list
 
+    async def update_message_id(self, msg_id):
+        if self.__db_id is not None:
+            await FootballBotDatabase.instance().update_message_id_for_event(self.__db_id, msg_id)
+
     def __update(self, name: str, value: str):
         name = name.lower()
         if name == "date" or name == "день" or name == "time" or name == "час" or name == "время":

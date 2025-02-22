@@ -148,6 +148,12 @@ class FootballBotDatabase:
         db: aiosqlite.Connection = await self._get_db()
         # todo: add member to event
 
+    async def update_message_id_for_event(self, event_id, msg_id):
+        event_id = int(event_id)
+        msg_id = int(msg_id)
+        db: aiosqlite.Connection = await self._get_db()
+        await db.execute(f"update event set message_id={msg_id} where id={event_id}")
+
     async def get_member_list(self, event_id):
         db: aiosqlite.Connection = await self._get_db()
         event_id = int(event_id)
