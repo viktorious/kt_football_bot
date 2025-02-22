@@ -77,13 +77,14 @@ async def kt_create_event(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         parse_mode="HTML",
         reply_markup=markup
     )
-    new_event.update_message_id(msg.id)
+    await new_event.update_message_id(msg.id)
 
 async def button(update, context):
     """Process clicking buttons for EVENT (register/unregister player)"""
     chat_id = update.effective_message.chat_id
+    msg_id = update.effective_message.id
     data = update.callback_query.data
-    await context.bot.send_message(chat_id, f"Pressed: {data} in {chat_id}")
+    await context.bot.send_message(chat_id, f"Pressed: {data} in {chat_id} MESSAGE_ID={msg_id}")
     await update.callback_query.answer()
 
 
