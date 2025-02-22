@@ -84,22 +84,22 @@ class Event:
         pass
 
     def create_html_message(self, chat_id):
-        time_hint = strftime("%A %Y-%B-%d %H:%M", self.time)
+        time_hint = strftime("%A %Y-%B-%d %H:%M", self.time.timetuple())
         html = f"<b>{self.title}</b>\n{time_hint}\n{self.address}\nКількість гравців: {self.players_limit}\n\n"
         # load participants list
         player_list = self.get_participants_list(chat_id)
         #TODO: ban list here!
-        counter = 1
-        for player in player_list:
-            player_login = f" ({player.login})" if str(player.login) != "" else ""
-            html = html + f"{counter}. {player.name}{player_login}\n\t\t{time_reaction} сек ({player.hit_count})"
-            counter = counter + 1
-            if int(counter) == int(self.players_limit):
-                html = html + "\n\nЧерга: \n\n"
-            # "1. Viktor Sharov (the_viktorious)\n"
-            # f"\t\t⏱0.12 seconds\n"
-            # "2. Viktor Sharov (the_viktorious)\n"
-            # f"\t\t⏱0.21 seconds\n",
+        # counter = 1
+        # for player in player_list:
+        #     player_login = f" ({player.login})" if str(player.login) != "" else ""
+        #     html = html + f"{counter}. {player.name}{player_login}\n\t\t{time_reaction} сек ({player.hit_count})"
+        #     counter = counter + 1
+        #     if int(counter) == int(self.players_limit):
+        #         html = html + "\n\nЧерга: \n\n"
+        #     # "1. Viktor Sharov (the_viktorious)\n"
+        #     # f"\t\t⏱0.12 seconds\n"
+        #     # "2. Viktor Sharov (the_viktorious)\n"
+        #     # f"\t\t⏱0.21 seconds\n",
         return html
 
     @staticmethod
