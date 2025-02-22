@@ -22,10 +22,10 @@ class Event:
     players_limit : int = 21
 
     def __init__(self, message_text: str, db_id: int = None):
-        self.__title = ""
-        self.__time = datetime.datetime.now()
-        self.__players_limit = 21
-        self.__address = ""
+        self.title = ""
+        self.time = datetime.datetime.now()
+        self.players_limit = 21
+        self.address = ""
         self.__db_id = db_id
         self.update_param(message_text, fill_default=db_id is None)
 
@@ -42,11 +42,11 @@ class Event:
             event_date_time =  datetime.datetime.today() + datetime.timedelta(days=1)
             event_date_time = datetime.datetime(year=event_date_time.year, month=event_date_time.month,
                                                 day=event_date_time.day, hour=19, minute=0, second=0)
-            self.__time = event_date_time
-            self.__title = (f"⚽️Футбол {event_date_time.day}-{event_date_time.month}-{event_date_time.year} "
+            self.time = event_date_time
+            self.title = (f"⚽️Футбол {event_date_time.day}-{event_date_time.month}-{event_date_time.year} "
                            f"{event_date_time.hour}:{event_date_time.minute}⚽️")
-            self.__address = "🏟 Футбольне поле, вул. Липи, 6-А"
-            self.__players_limit = 21
+            self.address = "🏟 Футбольне поле, вул. Липи, 6-А"
+            self.players_limit = 21
             #TODO: use per-channel default templates
         for long_line in message_text.splitlines():
             for line in long_line.split(";"):
@@ -68,13 +68,13 @@ class Event:
         Store event to database - either create new record or update existing
         """
         self.__db_id = FootballBotDatabase.instance().create_event(
-            event_title=self.__title,
-            event_time=time.mktime(self.__time.timetuple()),
-            event_address=self.__address,
+            event_title=self.title,
+            event_time=time.mktime(self.time.timetuple()),
+            event_address=self.address,
             message_time=time.time(),
             message_id=9,
             chat_id=chat_id,
-            players_limit=self.__players_limit,
+            players_limit=self.players_limit,
         )
 
     def remove_from_db(self):
@@ -84,13 +84,13 @@ class Event:
         pass
 
     def create_html_message(self, chat_id):
-        time_hint = strftime("%A %Y-%B-%d %H:%M", self.__time)
+        time_hint = strftime("%A %Y-%B-%d %H:%M", self.time)
         html = f"<b>{self.title}</b>\n{time_hint}\n{self.address}\nКількість гравців: {self.players_limit}\n\n"
         # load participants list
         player_list = self.get_participants_list(chat_id)
         #TODO: ban list here!
         counter = 1
-        for player in players_list:
+        for player in player_list:
             player_login = f" ({player.login})" if str(player.login) != "" else ""
             html = html + f"{counter}. {player.name}{player_login}\n\t\t{time_reaction} сек ({player.hit_count})"
             counter = counter + 1
@@ -109,10 +109,10 @@ class Event:
         for row in db_event_list:
             # id, event_title, event_time, event_address, message_timestamp, message_id, chat_id, players_limit
             item = Event(message_text="", db_id=int(row[0]))
-            item.__title = str(row[1])
-            item.__time = datetime.datetime.fromtimestamp(int(row[2]))
-            item.__address = str(row[3])
-            item.__players_limit = int(row[7])
+            item.title = str(row[1])
+            item.time = datetime.datetime.fromtimestamp(int(row[2]))
+            item.address = str(row[3])
+            item.players_limit = int(row[7])
             result.append(item)
         return result
 
@@ -144,12 +144,12 @@ class Event:
         if name == "date" or name == "день" or name == "time" or name == "час" or name == "время":
             self.__update_date_time(value)
         if name == "title" or name == "опис" or name == "описание" or name == "заголовок":
-            self.__title = value
+            self.title = value
         if name == "address" or name == "адрес" or name == "адреса":
-            self.__address = value
+            self.address = value
         if name == "players_limit" or name == "limit" or name == "количество" or name == "кількість":
             try:
-                self.__players_limit = int(value)
+                self.players_limit = int(value)
             except ValueError:
                 pass
 
@@ -170,13 +170,13 @@ class Event:
             if hint.startswith("day") or hint.startswith("дн") or hint.startswith("ден"):
                 delta = datetime.timedelta(days=step)
             if delta is not None:
-                self.__time = self.__time + delta
+                self.time = self.time + delta
 
-        year = self.__time.year
-        month = self.__time.month
-        day = self.__time.day
-        hour = self.__time.hour
-        minute = self.__time.minute
+        year = self.time.year
+        month = self.time.month
+        day = self.time.day
+        hour = self.time.hour
+        minute = self.time.minute
 
         #exact date/time in format
         reg_res = re.search(r"(\d{1,2})-(\d{1,2})-(\d{2,4})", value)
@@ -205,4 +205,4 @@ class Event:
                     day = t.day
             add_day = 1
 
-        self.__time = datetime.datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=0)
+        self.time = datetime.datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=0)
